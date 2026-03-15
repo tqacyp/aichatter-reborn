@@ -26,13 +26,6 @@ html, body {
     height: 100%; /* 👈 关键：强制占满父容器高度 */
 }
 
-.right-main-content {
-    flex: 5;
-    background-color: rgb(255, 255, 255);
-    /* 如果右侧内容也会很多，建议也加上 overflow-y: auto */
-    overflow-y: auto; 
-}
-
 .logo img {
     max-width: 70%;
     height: auto;
@@ -89,4 +82,20 @@ html, body {
 .chat-histories-container a:hover {
     background-color: #e5e5e5;
     border-radius: 15px;
+}
+
+.right-main-content {
+    flex: 5;
+    display: flex;
+    justify-content: center; /* 子容器水平居中 */
+    background-color: rgb(255, 255, 255);
+    /* 如果右侧内容也会很多，建议也加上 overflow-y: auto */
+    overflow-y: auto; 
+}
+
+.message-container {
+    display: flex;
+    width: 80%;
+    min-height: 100%;
+    height: fit-content;
 }
