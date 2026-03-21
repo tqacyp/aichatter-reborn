@@ -1,4 +1,5 @@
 import "./style.css"
+import { renderMarkdown } from "./utils/markdown"
 
 /* DOM 对象 */
-chatHistoryContainer = document.getElementById("chat-histories-container")
+let chatHistoryContainer = document.getElementById("chat-histories-container")

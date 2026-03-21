@@ -95,7 +95,25 @@ html, body {
 
 .message-container {
     display: flex;
-    width: 80%;
+    flex-direction: column;
+    width: 50%;
     min-height: 100%;
     height: fit-content;
+}
+
+.user-message-container {
+    display: flex;
+    margin: 20px 0;
+}
+
+.user-message {
+    display: flex;
+    margin-left: auto;
+    background-color: #e0e0e0;
+    border-radius: 20px;
+    max-width: 70%;
+    padding: 10px 20px;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
 }
