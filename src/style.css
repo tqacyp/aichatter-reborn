@@ -87,18 +87,24 @@ html, body {
 .right-main-content {
     flex: 5;
     display: flex;
-    justify-content: center; /* 子容器水平居中 */
+    flex-direction: column;
+    align-items: center;
     background-color: rgb(255, 255, 255);
-    /* 如果右侧内容也会很多，建议也加上 overflow-y: auto */
-    overflow-y: auto; 
 }
 
 .message-container {
+    flex: 1;
     display: flex;
     flex-direction: column;
     width: 50%;
-    min-height: 100%;
     height: fit-content;
+    overflow-y: auto;
+}
+
+.input-area {
+    min-height: 160px;
+    margin: 20px 0;
+    flex-shrink: 0;
 }
 
 .user-message-container {
