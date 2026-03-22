@@ -16,14 +16,15 @@ html, body {
 }
 
 .left-chat-histories {
-    flex: 1; /* 或者写固定宽度如 250px */
+    width: 250px;
     background-color: rgb(180, 180, 180);
     padding: 1%;
-    
+
     /* 👇 新增：让左侧栏内部也变成弹性布局，以便控制子元素高度 */
     display: flex;
-    flex-direction: column; 
+    flex-direction: column;
     height: 100%; /* 👈 关键：强制占满父容器高度 */
+    flex-shrink: 0;
 }
 
 .logo img {
@@ -85,26 +86,52 @@ html, body {
 }
 
 .right-main-content {
-    flex: 5;
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     background-color: rgb(255, 255, 255);
+    min-width: 0; /* 防止内容溢出 */
 }
 
 .message-container {
     flex: 1;
     display: flex;
     flex-direction: column;
-    width: 50%;
-    height: fit-content;
+    width: 100%;
+    max-width: 800px;
+    min-height: 0;
     overflow-y: auto;
 }
 
 .input-area {
-    min-height: 160px;
+    min-height: 60px;
+    max-height: 300px;
     margin: 20px 0;
     flex-shrink: 0;
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+}
+
+.input-area textarea {
+    width: 100%;
+    min-height: 150px;
+    max-height: 300px;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: none;
+    overflow-y: auto;
+    box-sizing: border-box;
+    outline: none;
+    font-family: inherit;
+}
+
+.input-area textarea:focus {
+    border-color: #999;
 }
 
 .user-message-container {
@@ -113,13 +140,44 @@ html, body {
 }
 
 .user-message {
-    display: flex;
     margin-left: auto;
     background-color: #e0e0e0;
     border-radius: 20px;
     max-width: 70%;
     padding: 10px 20px;
-    align-items: center;
-    justify-content: center;
-    width: fit-content;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    display: block;
+}
+
+.assistant-message-container {
+    display: flex;
+    margin: 20px 0;
+}
+
+.assistant-message {
+    margin-right: auto;
+    background-color: #e3f2fd;
+    border-radius: 20px;
+    max-width: 70%;
+    padding: 10px 20px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    display: block;
+}
+
+/* 确保消息内的代码块正确显示 */
+.assistant-message pre,
+.user-message pre {
+    white-space: pre;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.assistant-message code,
+.user-message code {
+    word-break: break-word;
+    white-space: pre-wrap;
 }
