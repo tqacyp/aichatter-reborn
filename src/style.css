@@ -74,15 +74,42 @@ html, body {
 .chat-histories-container a {
     display: flex;
     justify-content: flex-start;
-    padding: 10px 5%;
+    padding: 12px 16px;
     text-decoration: none; /* 去掉链接下划线 */
     color: inherit; /* 继承文字颜色 */
     cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    margin: 4px 0;
 }
 
 .chat-histories-container a:hover {
     background-color: #e5e5e5;
-    border-radius: 15px;
+    border-radius: 8px;
+}
+
+.chat-histories-container a.active {
+    background-color: #e3f2fd;
+    font-weight: 500;
+    border-radius: 8px;
+}
+
+.empty-history {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+.chat-histories-container .error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px;
+    text-align: center;
+    font-size: 14px;
 }
 
 .right-main-content {
@@ -112,6 +139,7 @@ html, body {
     width: 100%;
     max-width: 800px;
     display: flex;
+    flex-direction: column; /* 垂直布局 */
 }
 
 .input-area textarea {
@@ -135,9 +163,28 @@ html, body {
 }
 
 .input-area #submit-button {
-    margin: 40px 10px 0px 10px;
-    width: 100px;
+    margin: 10px 0 0 0; /* 减少上边距 */
+    padding: 8px 24px; /* 使用padding控制尺寸 */
+    min-width: 80px;
+    max-width: 120px;
+    height: 40px; /* 固定高度 */
     border-radius: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.input-area #submit-button:hover {
+    background-color: #0056b3;
+}
+
+.input-area #submit-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
 }
 
 .user-message-container {
@@ -186,4 +233,191 @@ html, body {
 .user-message code {
     word-break: break-word;
     white-space: pre-wrap;
+}
+
+.error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    max-width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* 思考消息样式 */
+.reasoning-message-container {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0;
+}
+
+/* 思考消息折叠样式 */
+.reasoning-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px 0;
+}
+
+.reasoning-title {
+    font-weight: 600;
+    color: #5d4037;
+    font-size: 14px;
+}
+
+.reasoning-toggle {
+    background: none;
+    border: 1px solid #ffb300;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: #5d4037;
+    cursor: pointer;
+}
+
+.reasoning-content {
+    margin-top: 5px;
+    padding: 10px;
+    background-color: #fffef7;
+    border: 1px dashed #ffe082;
+    border-radius: 8px;
+}
+
+.reasoning-message {
+    background-color: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 12px;
+    padding: 10px 15px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    display: block;
+    font-size: 13px;
+    color: #5d4037;
+    line-height: 1.5;
+}
+
+/* 输入控制区域 */
+.input-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* 改为左对齐 */
+    margin-top: 10px;
+    width: 100%;
+    gap: 20px; /* 使用gap统一间距 */
+}
+
+.thinking-toggle {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.thinking-toggle label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+}
+
+.thinking-toggle input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+/* 加载指示器 */
+.loading-indicator {
+    display: inline-block;
+    margin-left: 10px;
+    color: #666;
+    font-size: 14px;
+}
+
+.loading-dots {
+    display: inline-block;
+    width: 20px;
+    text-align: left;
+}
+
+.loading-dots::after {
+    content: '...';
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+}
+
+/* 消息发送状态 */
+.message-status {
+    text-align: center;
+    margin: 5px 0;
+    font-size: 13px;
+    color: #666;
+}
+
+/* 重试按钮 */
+.retry-button {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.retry-button:hover {
+    background-color: #ffcdd2;
+}
+
+
+/* 消息区域优化 */
+.user-message, .assistant-message {
+    line-height: 1.6;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .left-chat-histories {
+        width: 200px;
+    }
+    .message-container {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+    .input-area {
+        padding: 0 10px;
+    }
+    .user-message, .assistant-message, .reasoning-content {
+        max-width: 85%;
+    }
+}
+
+@media (max-width: 480px) {
+    .left-chat-histories {
+        width: 180px;
+    }
+    .input-controls {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .thinking-toggle label {
+        font-size: 13px;
+    }
 }

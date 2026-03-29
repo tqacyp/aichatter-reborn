@@ -98,39 +98,82 @@ function processMathExpressions(text) {
 
   const displayMath = (formula) => {
     try {
-      return katex.renderToString(formula, {
+      const result = katex.renderToString(formula, {
         throwOnError: false,
         displayMode: true,
         output: 'html'
       });
+      console.log('KaTeX display math success:', formula.substring(0, 100), '->', result.substring(0, 100));
+      return result;
     } catch (e) {
-      console.error("渲染失败:",e);
+      console.error("KaTeX渲染失败:", e, 'formula:', formula);
       return `<div class="katex-error">${escapeHtml(formula)}</div>`;
     }
   };
 
   const inlineMath = (formula) => {
     try {
-      return katex.renderToString(formula, {
+      const result = katex.renderToString(formula, {
         throwOnError: false,
         displayMode: false,
         output: 'html'
       });
+      console.log('KaTeX inline math success:', formula.substring(0, 100), '->', result.substring(0, 100));
+      return result;
     } catch (e) {
-      console.error("渲染失败:",e);
+      console.error("KaTeX渲染失败:", e, 'formula:', formula);
       return `<span class="katex-error">${escapeHtml(formula)}</span>`;
     }
   };
 
-  let result = str;
+  console.log('processMathExpressions input:', str.substring(0, 200));
 
-  // 块级公式
+  // 第一步：保护代码块和内联代码的内容（但保留标记）
+  const codeBlockContents = [];
+  const inlineCodeContents = [];
+  let protectedText = str;
+
+  // 保护代码块内容：匹配 ```language\ncontent\n``` 或 ```\ncontent\n```
+  protectedText = protectedText.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, content) => {
+    const id = `__CODEBLOCK_CONTENT_${codeBlockContents.length}__`;
+    codeBlockContents.push(content);
+    return `\`\`\`${lang}\n${id}\n\`\`\``;
+  });
+
+  // 保护内联代码内容：匹配 `content`
+  protectedText = protectedText.replace(/`([^`\n]+)`/g, (match, content) => {
+    const id = `__INLINECODE_CONTENT_${inlineCodeContents.length}__`;
+    inlineCodeContents.push(content);
+    return `\`${id}\``;
+  });
+
+  // 第二步：处理数学公式
+  let result = protectedText;
+
+  // 块级公式：支持 $$...$$ 和 \[...\] 以及 \\[...\\]
   result = result.replace(/\$\$([\s\S]+?)\$\$/g, (_, f) => displayMath(f.trim()));
-  result = result.replace(/\\\[([\s\S]+?)\\\]/g, (_, f) => displayMath(f.trim()));
+  result = result.replace(/(?<!\\)\\\[([\s\S]+?)\\\]/g, (_, f) => displayMath(f.trim()));
+  result = result.replace(/\\\\\[([\s\S]+?)\\\\\]/g, (_, f) => displayMath(f.trim()));
 
-  // 行内公式
+  // 行内公式：支持 $...$ 和 \(...) 以及 \\(...\\)
   result = result.replace(/\$([^$]+?)\$/g, (_, f) => inlineMath(f.trim()));
-  result = result.replace(/\\\(([\s\S]+?)\\\)/g, (_, f) => inlineMath(f.trim()));
+  result = result.replace(/(?<!\\)\\\(([\s\S]+?)\\\)/g, (_, f) => inlineMath(f.trim()));
+  result = result.replace(/\\\\\(([\s\S]+?)\\\\\)/g, (_, f) => inlineMath(f.trim()));
+
+  // 第三步：恢复代码块和内联代码的内容
+  // 恢复内联代码内容
+  inlineCodeContents.forEach((content, index) => {
+    const placeholder = `__INLINECODE_CONTENT_${index}__`;
+    result = result.replace(placeholder, content);
+  });
+
+  // 恢复代码块内容
+  codeBlockContents.forEach((content, index) => {
+    const placeholder = `__CODEBLOCK_CONTENT_${index}__`;
+    result = result.replace(placeholder, content);
+  });
+
+  console.log('processMathExpressions output:', result.substring(0, 200));
 
   return result;
 }
@@ -140,8 +183,19 @@ export async function renderMarkdown(markdownText) {
   if (!markdownText) return '';
   try {
     const text = ensureString(markdownText);
+    console.log('renderMarkdown input:', text.substring(0, 200));
     const processed = processMathExpressions(text);
-    const html = await marked.parse(processed);
+    console.log('renderMarkdown after processMathExpressions:', processed.substring(0, 200));
+    // 配置marked不转义HTML，以便KaTeX生成的HTML能够正确渲染
+    const html = await marked.parse(processed, {
+      sanitize: false,
+      headerIds: false,
+      mangle: false,
+      gfm: true,
+      breaks: false,
+      smartypants: false
+    });
+    console.log('renderMarkdown final html:', html.substring(0, 200));
     return html;
   } catch (error) {
     console.error('Markdown渲染错误:', error);
