@@ -4,7 +4,6 @@ import { renderMarkdown } from './utils/markdown.js'
 // import { init } from './test-format.js'
 
 /* DOM 对象 */
-const chatHistories = document.getElementById("chat-histories-container")
 const messageContainer = document.getElementById("message-container")
 const inputBox = document.getElementById("input-box")
 const submitButton = document.getElementById("submit-button")
@@ -14,7 +13,6 @@ const thinkingToggle = document.getElementById("thinking-toggle")
 /* 状态管理 */
 let isSending = false
 let currentLoadingIndicator = null
-let isAddingUserMessage = false
 let lastSentMessage = null
 let lastSentTime = 0
 const SEND_COOLDOWN_MS = 1000  // 1秒冷却时间
@@ -253,7 +251,6 @@ async function displayReasoningMessage(content) {
 inputBox.addEventListener('keydown',function(event){
     // 发送用户消息
     if (event.key === 'Enter' && !event.shiftKey) {
-        debugger
         console.log('Enter key pressed, calling addUserMessage')
         event.preventDefault()
         event.stopPropagation()
@@ -281,7 +278,6 @@ inputBox.addEventListener('keydown',function(event){
 submitButton.addEventListener('click',function(event) {
     // 同样是发送用户消息（按钮）
     if (event.button === 0) {
-        debugger
         console.log('Submit button clicked, calling addUserMessage')
         event.preventDefault()
         event.stopPropagation()
