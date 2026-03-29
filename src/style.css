@@ -134,6 +134,12 @@ html, body {
     border-color: #999;
 }
 
+.input-area #submit-button {
+    margin: 40px 10px 0px 10px;
+    width: 100px;
+    border-radius: 10px;
+}
+
 .user-message-container {
     display: flex;
     margin: 20px 0;
