@@ -68,7 +68,7 @@ marked.use({
         // 匹配代码块开始标记
         return src.match(/^```/m)?.index;
       },
-      tokenizer(src, tokens) {
+      tokenizer(src) {
         const rule = /^```(\w*)\n([\s\S]*?)```/;
         const match = rule.exec(src);
         if (match) {
@@ -104,6 +104,7 @@ function processMathExpressions(text) {
         output: 'html'
       });
     } catch (e) {
+      console.error("渲染失败:",e);
       return `<div class="katex-error">${escapeHtml(formula)}</div>`;
     }
   };
@@ -116,6 +117,7 @@ function processMathExpressions(text) {
         output: 'html'
       });
     } catch (e) {
+      console.error("渲染失败:",e);
       return `<span class="katex-error">${escapeHtml(formula)}</span>`;
     }
   };
@@ -127,7 +129,7 @@ function processMathExpressions(text) {
   result = result.replace(/\\\[([\s\S]+?)\\\]/g, (_, f) => displayMath(f.trim()));
 
   // 行内公式
-  result = result.replace(/\$([^\$]+?)\$/g, (_, f) => inlineMath(f.trim()));
+  result = result.replace(/\$([^$]+?)\$/g, (_, f) => inlineMath(f.trim()));
   result = result.replace(/\\\(([\s\S]+?)\\\)/g, (_, f) => inlineMath(f.trim()));
 
   return result;

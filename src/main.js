@@ -51,7 +51,7 @@ submitButton.addEventListener('click',function(event) {
 async function newSession(timestampNow) {
     let conversationUuid = null
     try {
-        const response = await fetch("/api/test",{
+        const response = await fetch("/api/newsession",{
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
