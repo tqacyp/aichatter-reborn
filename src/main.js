@@ -253,6 +253,7 @@ async function displayReasoningMessage(content) {
 inputBox.addEventListener('keydown',function(event){
     // 发送用户消息
     if (event.key === 'Enter' && !event.shiftKey) {
+        debugger
         console.log('Enter key pressed, calling addUserMessage')
         event.preventDefault()
         event.stopPropagation()
@@ -280,6 +281,7 @@ inputBox.addEventListener('keydown',function(event){
 submitButton.addEventListener('click',function(event) {
     // 同样是发送用户消息（按钮）
     if (event.button === 0) {
+        debugger
         console.log('Submit button clicked, calling addUserMessage')
         event.preventDefault()
         event.stopPropagation()
