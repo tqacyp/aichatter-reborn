@@ -18,6 +18,14 @@ let lastSentTime = 0
 const SEND_COOLDOWN_MS = 1000  // 1秒冷却时间
 let isProcessingEvent = false  // 防止事件重复处理
 
+/* 流式渲染性能优化 */
+let assistantRenderTimeout = null
+let reasoningRenderTimeout = null
+const RENDER_DEBOUNCE_MS = 0  // 防抖时间100ms
+const RENDER_CHUNK_SIZE = 0    // 至少累积50个字符才渲染
+let pendingAssistantUpdate = { element: null, content: '' }
+let pendingReasoningUpdate = { element: null, content: '' }
+
 /* 消息内容渲染函数 */
 // 渲染用户消息内容（简单文本，只处理换行符）
 async function renderUserMessageContent(element, content) {
@@ -221,7 +229,7 @@ function showRetryButton(errorMessage) {
 // 处理用户发送消息
 
 async function addUserMessage(content) {
-    console.log('addUserMessage called with content:', content, 'stack:', new Error().stack)
+    //console.log('addUserMessage called with content:', content, 'stack:', new Error().stack)
     // 追加用户消息到message-container
     const newUserMessageContainer = document.createElement('div')
     newUserMessageContainer.className = 'user-message-container'
@@ -251,7 +259,7 @@ async function displayReasoningMessage(content) {
 inputBox.addEventListener('keydown',function(event){
     // 发送用户消息
     if (event.key === 'Enter' && !event.shiftKey) {
-        console.log('Enter key pressed, calling addUserMessage')
+        //console.log('Enter key pressed, calling addUserMessage')
         event.preventDefault()
         event.stopPropagation()
 
@@ -278,7 +286,7 @@ inputBox.addEventListener('keydown',function(event){
 submitButton.addEventListener('click',function(event) {
     // 同样是发送用户消息（按钮）
     if (event.button === 0) {
-        console.log('Submit button clicked, calling addUserMessage')
+        //console.log('Submit button clicked, calling addUserMessage')
         event.preventDefault()
         event.stopPropagation()
 
@@ -577,24 +585,72 @@ function createReasoningMessage() {
     return messageDiv
 }
 
-// 更新助手消息UI
+// 更新助手消息UI（防抖优化）
 async function updateAssistantUI(messageDiv, content) {
-    await renderAssistantMessageContent(messageDiv, content)
-    // 自动滚动到底部
-    messageContainer.scrollTop = messageContainer.scrollHeight
+    // 更新待处理的内容
+    pendingAssistantUpdate.element = messageDiv
+    pendingAssistantUpdate.content = content
+
+    // 如果内容增长小于阈值且已有定时器，则延迟渲染
+    const contentLength = content.length
+    const prevLength = pendingAssistantUpdate.element.dataset.lastLength || 0
+
+    if (contentLength - prevLength < RENDER_CHUNK_SIZE && assistantRenderTimeout !== null) {
+        // 已经有定时器，等待它触发
+        return
+    }
+
+    // 清除现有定时器
+    if (assistantRenderTimeout) {
+        clearTimeout(assistantRenderTimeout)
+    }
+
+    // 设置新的防抖定时器
+    assistantRenderTimeout = setTimeout(async () => {
+        await renderAssistantMessageContent(messageDiv, content)
+        // 记录已渲染的长度
+        messageDiv.dataset.lastLength = content.length.toString()
+        // 自动滚动到底部
+        messageContainer.scrollTop = messageContainer.scrollHeight
+        assistantRenderTimeout = null
+    }, RENDER_DEBOUNCE_MS)
 }
 
-// 更新思考消息UI
+// 更新思考消息UI（防抖优化）
 async function updateReasoningUI(messageDiv, content) {
-    await renderReasoningMessageContent(messageDiv, content)
-    // 自动滚动到底部
-    messageContainer.scrollTop = messageContainer.scrollHeight
+    // 更新待处理的内容
+    pendingReasoningUpdate.element = messageDiv
+    pendingReasoningUpdate.content = content
+
+    // 如果内容增长小于阈值且已有定时器，则延迟渲染
+    const contentLength = content.length
+    const prevLength = pendingReasoningUpdate.element ? (pendingReasoningUpdate.element.dataset.lastLength || 0) : 0
+
+    if (contentLength - prevLength < RENDER_CHUNK_SIZE && reasoningRenderTimeout !== null) {
+        // 已经有定时器，等待它触发
+        return
+    }
+
+    // 清除现有定时器
+    if (reasoningRenderTimeout) {
+        clearTimeout(reasoningRenderTimeout)
+    }
+
+    // 设置新的防抖定时器
+    reasoningRenderTimeout = setTimeout(async () => {
+        await renderReasoningMessageContent(messageDiv, content)
+        // 记录已渲染的长度
+        messageDiv.dataset.lastLength = content.length.toString()
+        // 自动滚动到底部
+        messageContainer.scrollTop = messageContainer.scrollHeight
+        reasoningRenderTimeout = null
+    }, RENDER_DEBOUNCE_MS)
 }
 
 // 修改现有的事件监听器，添加消息发送
 const originalAddUserMessage = addUserMessage
 addUserMessage = async function(content) {
-    console.log('Overridden addUserIdMessage called with content:', content)
+    //console.log('Overridden addUserIdMessage called with content:', content)
 
     // 防重复检查：避免短时间内发送相同消息
     const now = Date.now()
@@ -607,9 +663,9 @@ addUserMessage = async function(content) {
     lastSentMessage = content
     lastSentTime = now
 
-    console.log('Overridden addUserMessage: calling originalAddUserMessage')
+    //console.log('Overridden addUserMessage: calling originalAddUserMessage')
     await originalAddUserMessage(content)
-    console.log('Overridden addUserMessage: calling sendMessage')
+    //console.log('Overridden addUserMessage: calling sendMessage')
     // 发送消息到后端，使用思考模式开关的状态
     const thinkingEnabled = thinkingToggle ? thinkingToggle.checked : false
     sendMessage(content, thinkingEnabled)
