@@ -1,6 +1,7 @@
 import './style.css'
 import './code-style.css'
 import { renderMarkdown } from './utils/markdown.js'
+import { AdvancedScrollDetector } from './scrollDetector.js'
 // import { init } from './test-format.js'
 
 /* DOM 对象 */
@@ -184,7 +185,7 @@ function showLoading() {
     if (submitButton) submitButton.disabled = true
 
     // 滚动到底部
-    messageContainer.scrollTop = messageContainer.scrollHeight
+    scrollToBottom(messageContainer)
 }
 
 // 隐藏加载状态
@@ -223,7 +224,7 @@ function showRetryButton(errorMessage) {
     messageContainer.appendChild(errorDiv)
 
     // 滚动到底部
-    messageContainer.scrollTop = messageContainer.scrollHeight
+    scrollToBottom(messageContainer)
 }
 
 // 处理用户发送消息
@@ -558,13 +559,15 @@ function createReasoningMessage() {
     header.className = 'reasoning-header'
     header.innerHTML = `
         <span class="reasoning-title">思考过程</span>
-        <button class="reasoning-toggle">收起</button>
+        <button class="reasoning-toggle">展开</button>
     `
 
-    // 内容容器（默认展开）
+    // 内容容器（默认折叠）
+    // 我tm也不知道为什么ai没有给我做动画，先用display=block/none凑合吧
+    // 这坨代码迟早得被重构
     const contentContainer = document.createElement('div')
     contentContainer.className = 'reasoning-content'
-    contentContainer.style.display = 'block'
+    contentContainer.style.display = 'none'
 
     const messageDiv = document.createElement('div')
     messageDiv.className = 'reasoning-message'
@@ -611,9 +614,34 @@ async function updateAssistantUI(messageDiv, content) {
         // 记录已渲染的长度
         messageDiv.dataset.lastLength = content.length.toString()
         // 自动滚动到底部
-        messageContainer.scrollTop = messageContainer.scrollHeight
+        scrollToBottom(messageContainer);
         assistantRenderTimeout = null
     }, RENDER_DEBOUNCE_MS)
+}
+/**
+ * 针对特定元素滚动到底部
+ * @param {HTMLElement} element 要滚动的元素
+ */
+function scrollToBottom(element) {
+    let scrollDetector = new AdvancedScrollDetector()
+    if(isScrolledToBottom(element) && !scrollDetector.isScrollingNow()) {
+        element.scrollTo({
+            top: element.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+}
+
+/**
+ * 针对特定元素查询是否在底部
+ * @param {HTMLElement} element 要查询是否在底部的元素
+ * @returns {boolean}
+ */
+function isScrolledToBottom(element) {
+    const { scrollTop, scrollHeight, clientHeight } = element;
+    let result = scrollTop + clientHeight >= scrollHeight - 70
+    console.log(`${result},${scrollTop},${clientHeight},${scrollHeight}`)
+    return result; // 50px阈值
 }
 
 // 更新思考消息UI（防抖优化）
@@ -642,7 +670,7 @@ async function updateReasoningUI(messageDiv, content) {
         // 记录已渲染的长度
         messageDiv.dataset.lastLength = content.length.toString()
         // 自动滚动到底部
-        messageContainer.scrollTop = messageContainer.scrollHeight
+        scrollToBottom(messageContainer)
         reasoningRenderTimeout = null
     }, RENDER_DEBOUNCE_MS)
 }
