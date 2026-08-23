@@ -7,7 +7,8 @@
 /* 代码块样式 */
 pre {
   background-color: #f6f8fa;
-  border-radius: 6px;
+  border-radius: 8px;
+  padding: 12px 14px;
   overflow-x: auto;
   margin: 1em 0;
 }

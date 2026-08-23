@@ -1,40 +1,56 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>aichatter-reborn</title>
+    <title>AI Chat</title>
   </head>
   <body>
     <div class="main-container">
-      <div class="left-chat-histories">
-        <div class="logo">
-          <img src="/public/logo.png" />
-        </div>
-        <div class="new-session-button-div">
+      <aside class="left-chat-histories">
+        <div class="sidebar-top">
+          <div class="logo">
+            <img src="/logo.png" alt="logo" />
+          </div>
           <button id="new-session-button">开启新对话</button>
         </div>
-        <div class="chat-history-notice">聊天记录：</div>
+        <div class="chat-history-notice">聊天记录</div>
         <div class="chat-histories-container" id="chat-histories-container">
           <!-- 对话记录将在这里动态添加 -->
         </div>
-      </div>
-      <div class="right-main-content">
+      </aside>
+
+      <main class="right-main-content">
         <div class="message-container" id="message-container">
-        </div>
-        <div class="input-area">
-          <textarea placeholder="输入消息,Enter发送,Shift+Enter换行" id="input-box"></textarea>
-          <div class="input-controls">
-            <div class="thinking-toggle">
-              <label>
-                <input type="checkbox" id="thinking-toggle"> 思考模式
-              </label>
-            </div>
-            <button type="submit" id="submit-button">发送</button>
+          <div class="welcome" id="welcome">
+            <div class="welcome-title">有什么可以帮你？</div>
+            <div class="welcome-subtitle">输入消息开始对话，Enter 发送，Shift+Enter 换行</div>
           </div>
         </div>
-      </div>
+
+        <div class="input-area-outer">
+          <div class="input-area">
+            <textarea
+              placeholder="输入消息，Enter 发送，Shift+Enter 换行"
+              id="input-box"
+              rows="1"
+            ></textarea>
+            <div class="input-controls">
+              <div class="thinking-toggle">
+                <label>
+                  <input type="checkbox" id="thinking-toggle" />
+                  <span>思考模式</span>
+                </label>
+              </div>
+              <div class="input-actions">
+                <button type="button" id="stop-button" class="stop-button" hidden>停止</button>
+                <button type="submit" id="submit-button">发送</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>
