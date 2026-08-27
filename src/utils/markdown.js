@@ -148,17 +148,25 @@ function highlightCode(code, language) {
 /* ───── 数学公式与代码块预处理 ───── */
 
 /**
- * 保护代码区域 → 渲染数学公式。
- * 代码块/行内代码先替换为 HTML 注释占位符，marked 解析后我们再替换成高亮结果。
- * 这样代码里的 $、反引号等内容都不会被数学正则或 marked 破坏。
+ * 保护代码区域与数学公式：
+ * 代码块/行内代码/块级公式/行内公式全部先替换为 HTML 注释占位符，
+ * 等 marked 解析完成后再各自还原成高亮代码 / KaTeX HTML。
+ *
+ * 注意：公式必须"先占位、后渲染"—— 如果先将 KaTeX 生成的 HTML 交给
+ * marked 解析，marked 会把它当作普通 markdown 文本处理，破坏其中的
+ * SVG path 数据、属性引号等（表现为表格里泄漏出 c-2.7,0,...、H400000v40H...
+ * 之类的裸文本，或公式显示为原始 LaTeX 源码）。
+ * 占位符是纯 HTML 注释，不包含 | 等字符，因此还能避免公式中的 | 撑坏表格。
  */
 function processMathExpressions(text) {
     const str = ensureString(text)
-    if (!str) return { text: '', blockCodes: [], inlineCodes: [], prefix: '' }
+    if (!str) return { text: '', blockCodes: [], inlineCodes: [], blockMaths: [], inlineMaths: [], prefix: '' }
 
     const prefix = `AICHAT_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`
     const blockCodes = []
     const inlineCodes = []
+    const blockMaths = []
+    const inlineMaths = []
 
     // 第一步：保护代码块
     let result = str.replace(CODE_BLOCK_REGEX, (match, lang, code) => {
@@ -174,25 +182,43 @@ function processMathExpressions(text) {
         return `<!--${token}-->`
     })
 
-    // 第三步：渲染数学公式
+    // 第三步：保护块级公式（必须先于行内，避免 $$ 被行内正则拆坏）
     result = result.replace(MATH_BLOCK_REGEX, (match, f1, f2) => {
         const formula = (f1 || f2 || '').trim()
-        return formula ? renderKatex(formula, true) : match
+        if (!formula) return match
+        const token = `${prefix}_MB_${blockMaths.length}`
+        blockMaths.push(formula)
+        return `<!--${token}-->`
     })
 
+    // 第四步：保护行内公式
     result = result.replace(MATH_INLINE_REGEX, (match, f1, f2) => {
         const formula = (f1 || f2 || '').trim()
-        return formula ? renderKatex(formula, false) : match
+        if (!formula) return match
+        const token = `${prefix}_MI_${inlineMaths.length}`
+        inlineMaths.push(formula)
+        return `<!--${token}-->`
     })
 
-    return { text: result, blockCodes, inlineCodes, prefix }
+    return { text: result, blockCodes, inlineCodes, blockMaths, inlineMaths, prefix }
 }
 
 /**
- * 把 marked 输出中的占位注释替换为代码HTML
+ * 把 marked 输出中的占位注释替换为 公式HTML / 高亮代码HTML
  */
-function restoreCodePlaceholders(html, prepared) {
+function restorePlaceholders(html, prepared) {
     let result = html
+
+    // 公式：marked 解析完成后再插入 KaTeX HTML，避免被 marked 改写
+    for (let i = 0; i < prepared.blockMaths.length; i++) {
+        const token = `<!--${prepared.prefix}_MB_${i}-->`
+        result = result.split(token).join(renderKatex(prepared.blockMaths[i], true))
+    }
+
+    for (let i = 0; i < prepared.inlineMaths.length; i++) {
+        const token = `<!--${prepared.prefix}_MI_${i}-->`
+        result = result.split(token).join(renderKatex(prepared.inlineMaths[i], false))
+    }
 
     for (let i = 0; i < prepared.blockCodes.length; i++) {
         const token = `<!--${prepared.prefix}_CB_${i}-->`
@@ -212,7 +238,7 @@ function restoreCodePlaceholders(html, prepared) {
 /* ───── 主渲染函数 ───── */
 
 /**
- * 完整Markdown渲染管线：保护代码 → 数学公式 → marked → 恢复高亮代码
+ * 完整Markdown渲染管线：保护代码块/公式 → marked 解析 → 还原 公式HTML与高亮代码
  */
 export async function renderMarkdown(markdownText) {
     if (!markdownText) return ''
@@ -228,11 +254,10 @@ export async function renderMarkdown(markdownText) {
         const html = marked.parse(prepared.text, {
             gfm: true,
             breaks: false,
-            headerIds: false,
             async: false
         })
 
-        const finalHtml = restoreCodePlaceholders(html, prepared)
+        const finalHtml = restorePlaceholders(html, prepared)
         cacheSet('markdown', cacheKey, finalHtml)
         return finalHtml
     } catch (error) {
