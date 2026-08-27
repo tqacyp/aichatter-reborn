@@ -26,6 +26,60 @@ code:not([class]) {
   border-radius: 3px;
 }
 
+/* ───── 列表 ───── */
+/* 全局 * { padding: 0 } 重置掉了列表缩进，这里恢复并呼吸感 */
+.markdown-body ul,
+.markdown-body ol {
+  margin: 0.5em 0;
+  padding-left: 1.7em;
+}
+
+.markdown-body li {
+  margin: 0.3em 0;
+}
+
+.markdown-body li > ul,
+.markdown-body li > ol {
+  margin: 0.25em 0;
+}
+
+/* 嵌套层级使用不同项目符号，便于区分 */
+.markdown-body ul ul {
+  list-style-type: circle;
+}
+
+.markdown-body ul ul ul {
+  list-style-type: square;
+}
+
+/* ───── 表格 ───── */
+.markdown-body table {
+  border-collapse: collapse;
+  margin: 1em 0;
+  /* 表格按内容宽度自适应，超出容器时横向滚动，避免撑破气泡 */
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #d0d7de;
+  padding: 8px 14px;
+  line-height: 1.6;
+}
+
+.markdown-body th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+
+/* 斑马纹，长表格更易读 */
+.markdown-body tbody tr:nth-child(even) {
+  background-color: #fafbfc;
+}
+
 /* KaTeX 公式样式 */
 .katex {
   font-size: 1.2em;
