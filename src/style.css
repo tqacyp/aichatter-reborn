@@ -38,6 +38,8 @@ button {
 
 .main-container {
     display: flex;
+    /* 兜底：老浏览器不支持 dvh 时高度会塌缩，导致列表无法滚动 */
+    height: 100vh;
     height: 100dvh;
     width: 100%;
 }
@@ -52,7 +54,10 @@ button {
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-height: 0;
     gap: 14px;
+    /* 侧栏自身不溢出，列表交给内部容器滚动 */
+    overflow: hidden;
 }
 
 .sidebar-top {
@@ -101,12 +106,14 @@ button {
 }
 
 .chat-histories-container {
-    flex: 1;
+    flex: 1 1 0%;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 4px;
     min-height: 0;
+    overscroll-behavior: contain;
 }
 
 .chat-histories-container a {
@@ -117,7 +124,11 @@ button {
     border-radius: 10px;
     transition: background-color 0.15s ease;
     white-space: nowrap;
-    overflow: hidden;
+    /* 关键：不能用 overflow:hidden —— 它会把 a 变成"滚动容器"，
+       吞掉滚轮事件（导致列表无法滚动、文字在 a 内部滚动）。
+       clip 同样裁剪+保留省略号，但不会成为滚动容器。 */
+    overflow: hidden; /* 老浏览器兜底（Chrome<90 等） */
+    overflow: clip;
     text-overflow: ellipsis;
 }
 

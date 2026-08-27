@@ -154,14 +154,18 @@ function renderConversations(conversations) {
 }
 
 /**
- * 高亮侧边栏中当前对话的链接
+ * 高亮侧边栏中当前对话的链接，并将其滚动到可视范围内
  */
 function highlightCurrentConversation() {
     const currentId = getCurrentConversationId()
     if (!currentId) return
 
     document.querySelectorAll('#chat-histories-container a').forEach(link => {
-        link.classList.toggle('active', link.dataset.conversationId === currentId)
+        const isActive = link.dataset.conversationId === currentId
+        link.classList.toggle('active', isActive)
+        if (isActive) {
+            link.scrollIntoView({ block: 'nearest' })
+        }
     })
 }
 
